@@ -1,0 +1,860 @@
+# MASTER BUILD PROMPT — ABSS MEETING MINUTES MANAGEMENT SYSTEM
+
+## 1. Your Role
+
+Act as a senior full-stack software engineer, enterprise UX/UI designer, database architect, and product designer.
+
+Build a complete, production-oriented, fully functional web application for **AB STAR SANDS (PVT) LTD (ABSS)** to manage official management meeting minutes, departmental discussions, decisions, action items, responsibilities, deadlines, and progress tracking.
+
+This must be a real working application, not a static dashboard, visual mockup, or landing page.
+
+Use the uploaded Excel workbook, **MEETING MINUTES ABSS**, as the primary reference for the existing meeting records, departmental structure, terminology, participants, topics, actions, responsible persons, and statuses.
+
+Do not invent historical meeting decisions or change the meaning of existing records.
+
+## 2. Product Vision
+
+Create a centralized web-based Meeting Minutes Management System that replaces manually maintained Excel meeting minutes.
+
+The application must allow authorized users to:
+
+- Create and manage meetings by selecting a meeting date.
+- View historical minutes for any meeting date.
+- Record discussions for multiple departments in one meeting.
+- Add multiple agenda items, topics, decisions, and action points.
+- Assign responsibilities to individual employees or multiple employees.
+- Set deadlines and update task statuses.
+- Review outstanding actions from previous meetings.
+- Track departmental accountability and management decisions.
+- Search, filter, export, print, and download meeting minutes.
+- Preserve historical records while allowing authorized corrections.
+- Import existing Excel records and export data back to Excel.
+
+All features must work through functional forms, database operations, filters, buttons, and navigation.
+
+## 3. Technology Stack
+
+Build the application using:
+
+- React with TypeScript.
+- Vite for the development environment.
+- Tailwind CSS for responsive styling.
+- Lucide icons for a consistent interface.
+- Firebase Authentication for secure user login.
+- Cloud Firestore for persistent meetings, agenda items, users, departments, and action items.
+- Firebase Storage only when file attachments are implemented.
+- A reliable Excel processing library such as SheetJS for importing and exporting XLSX files.
+- A suitable PDF generation library for downloadable, print-ready meeting minutes.
+
+Use reusable components, clean code, proper TypeScript types, input validation, error handling, loading states, and empty states.
+
+Do not store essential records only in browser memory, React state, or localStorage. Database changes must persist after refreshing the browser and signing in again.
+
+If Firebase configuration or credentials are not available, create the complete application structure and provide clear setup instructions. Never pretend that database persistence, authentication, or file export is working when it has not been configured and tested.
+
+## 4. Visual Design System
+
+Create a premium enterprise administration dashboard with a sophisticated dark theme.
+
+### Color palette
+
+- Main background: #101014
+- Sidebar background: #15151C
+- Card background: #1B1B25
+- Elevated surface: #242432
+- Primary green: #22C55E
+- Emerald accent: #10B981
+- Primary purple: #8B5CF6
+- Deep purple: #6D28D9
+- Main text: #F5F5F7
+- Secondary text: #A1A1B5
+- Border: #30303D
+- Warning: #F59E0B
+- Error: #EF4444
+
+Use green for primary actions, completion indicators, and positive progress. Use purple for secondary actions, selected navigation, meeting highlights, and interactive accents.
+
+Use semantic status colors consistently.
+
+### Design direction
+
+The UI should feel like a premium enterprise SaaS application with:
+
+- A collapsible left sidebar.
+- A clean top navigation bar.
+- Rounded cards with subtle borders.
+- Refined spacing and clear typography.
+- Subtle green and purple gradients in selected areas.
+- Restrained shadows and smooth transitions.
+- Professional tables with readable rows and sticky headers where useful.
+- Clear visual hierarchy for meeting dates, departments, discussions, and action items.
+- Responsive desktop, tablet, and mobile layouts.
+- Accessible contrast, visible keyboard focus, and properly labelled inputs.
+
+Avoid excessive gradients, glowing effects, oversized headings, decorative animations, and unnecessary glassmorphism. Prioritize readability and productivity.
+
+## 5. Application Navigation
+
+Create the following sidebar navigation:
+
+1. Dashboard
+2. All Meetings
+3. Create Meeting
+4. Departments
+5. Action Tracker
+6. Employees & Participants
+7. Reports & Analytics
+8. Import / Export
+9. User Management
+10. Settings
+
+Show the AB STAR SANDS (PVT) LTD identity in the sidebar.
+
+The active navigation item must be clearly highlighted. All navigation links must open functional pages.
+
+## 6. Dashboard
+
+Create a data-driven management dashboard.
+
+### Summary cards
+
+Display:
+
+- Total Meetings
+- Total Agenda Items
+- Total Action Items
+- Pending Actions
+- In Progress
+- Completed Actions
+- Overdue Actions
+
+Calculate these values from actual database records. Do not use hardcoded demonstration numbers once real data is connected.
+
+### Dashboard sections
+
+A. **Recent Meetings**
+- Meeting date.
+- Meeting title.
+- Number of agenda items.
+- Number of participating departments.
+- Meeting organizer.
+- Quick action to view minutes.
+
+B. **Pending Action Items**
+- Action description.
+- Department.
+- Responsible employee.
+- Meeting date.
+- Due date.
+- Current status.
+- Quick action to update status.
+
+C. **Overdue Actions**
+- Show actions whose deadlines have passed and whose statuses are not completed.
+- Highlight them clearly.
+- Allow authorized users to update the deadline or status.
+
+D. **Departmental Overview**
+- Finance.
+- Visa.
+- HR.
+- IT.
+- Business Development.
+- Operations.
+- Maintenance.
+- Any additional departments discovered in the workbook.
+
+E. **Recent Activity**
+- Meeting created.
+- Minutes updated.
+- Action assigned.
+- Status changed.
+- Meeting exported.
+
+Activity entries must reflect actual operations and the identity of the user performing them.
+
+## 7. Meeting Management
+
+Create a fully functional All Meetings page.
+
+### Meeting list
+
+Display meetings in a clean table or card layout containing:
+
+- Meeting date.
+- Meeting title.
+- Meeting type.
+- Organizer.
+- Attendees.
+- Number of departments.
+- Total action items.
+- Completed actions.
+- Pending actions.
+- Meeting status.
+
+Provide the following controls:
+
+- Search meetings by date, title, department, participant, or topic.
+- Filter by a date range.
+- Filter by department.
+- Sort by newest or oldest meeting.
+- Open meeting details.
+- Edit a meeting.
+- Duplicate a meeting as a new draft without duplicating historical action completion.
+- Export or print minutes.
+- Archive a meeting, subject to permissions.
+
+### Create Meeting page
+
+Provide a professional meeting creation form with:
+
+- Meeting date picker.
+- Meeting title.
+- Meeting type: Management, Departmental, Operations, Finance, or Other.
+- Meeting start time and end time.
+- Venue or meeting location.
+- Meeting chairperson.
+- Meeting organizer or minute-taker.
+- Attendees and their designations.
+- Meeting objectives.
+- General agenda.
+- Notes.
+
+The meeting date must be a real interactive date picker.
+
+Once a meeting date is selected, the user must be able to create and manage all discussions associated with that specific meeting.
+
+Prevent accidental duplicate meetings with the same date and title, while allowing legitimate multiple meetings on the same date.
+
+## 8. Departmental Minutes Editor
+
+This is the core feature of the entire application.
+
+Inside each meeting, provide a departmental minutes editor that supports multiple departments and unlimited agenda items.
+
+Each agenda item must include the following fields:
+
+1. Department — selectable dropdown.
+2. Topic / Agenda Item — text input.
+3. Discussion / Details — rich multiline text editor.
+4. Decision / Resolution — separate field.
+5. Action Required — detailed action description.
+6. Responsible Person(s) — multi-select employee dropdown.
+7. Date Assigned — default to the meeting date.
+8. Due Date — date picker.
+9. Status — selectable dropdown.
+10. Priority — Low, Medium, High, Critical.
+11. Additional Notes — optional.
+12. Attachments — optional supporting documents.
+13. Created By — authenticated user.
+14. Last Updated — automatically maintained timestamp.
+
+Allow users to add, edit, delete, and reorder agenda items according to their permissions.
+
+Provide an **Add Agenda Item** button and an **Add Another Department** action.
+
+An agenda item must not be limited to one action or one responsible person. Allow multiple action items when a discussion produces several distinct tasks.
+
+### Department filtering
+
+Provide a department selector at the top of the meeting detail page.
+
+When a user selects Finance, display only the Finance agenda items for that meeting. When the user selects HR, display HR items, and so on.
+
+Include an All Departments option.
+
+Changing the department filter must not delete, modify, or recreate any data.
+
+Also provide a date selector to navigate directly to another meeting and a clear indication of the currently selected meeting date.
+
+### Departmental layout
+
+Use a clean, readable layout that supports both table view and detailed card view.
+
+The table should contain:
+
+Department | Topic | Discussion / Decision | Action Required | Responsible Person | Due Date | Status
+
+Allow users to expand each row to see the full discussion and action details.
+
+Support long text without cutting off important content.
+
+## 9. Meeting Details and Minutes View
+
+When a user opens a meeting, display a professional meeting minutes document within the application.
+
+Use the following structure:
+
+**AB STAR SANDS (PVT) LTD**
+
+**MEETING MINUTES**
+
+Meeting Date: [Selected Meeting Date]
+
+Meeting Title: [Meeting Title]
+
+Chairperson: [Chairperson]
+
+Minute-Taker: [Organizer]
+
+Venue: [Venue]
+
+**PRESENT**
+
+Display the attendee names and designations.
+
+**AGENDA ITEMS & DISCUSSIONS**
+
+Group agenda items by department, then show each topic with its discussion, decision, actions, responsible persons, due dates, and statuses.
+
+**KEY DECISIONS**
+
+Summarize recorded decisions from the meeting.
+
+**ACTION ITEMS SUMMARY**
+
+Display all assigned tasks and their deadlines.
+
+**NEXT MEETING**
+
+Optional next meeting date and notes.
+
+**PREPARED BY / APPROVED BY**
+
+Provide appropriate fields for preparation and approval.
+
+All fields must populate from the database. Do not use static placeholder text in generated minutes.
+
+Allow the user to preview the complete minutes before exporting.
+
+## 10. Action Tracker
+
+Build a centralized action management module across all meetings.
+
+An action item must remain connected to its original meeting and agenda item.
+
+### Action statuses
+
+Support:
+
+- Not Started
+- In Progress
+- Pending External Party
+- On Hold
+- Completed
+- Cancelled
+
+Allow administrators to configure the available statuses in Settings.
+
+Use an additional automatically calculated overdue indicator when a non-completed task passes its due date.
+
+### Action tracker table
+
+Include:
+
+- Action ID.
+- Meeting date.
+- Department.
+- Topic.
+- Action description.
+- Responsible person.
+- Assigned date.
+- Due date.
+- Priority.
+- Status.
+- Last updated.
+- View original meeting.
+
+### Filters
+
+- Meeting date.
+- Department.
+- Responsible person.
+- Status.
+- Priority.
+- Due date.
+- Overdue only.
+- Completed only.
+
+Provide quick status updates, action detail views, and task reassignment for authorized users.
+
+Allow an action to be updated without rewriting the original meeting discussion.
+
+Maintain an update history showing the old status, new status, changed by, and timestamp.
+
+## 11. Carry-Forward Actions
+
+Support tracking unfinished actions from previous meetings.
+
+When creating a new meeting, display an optional section named **Outstanding Actions from Previous Meetings**.
+
+Allow authorized users to select relevant unfinished tasks and add them to the new meeting's follow-up agenda.
+
+When carrying an action forward:
+
+- Keep its original meeting date.
+- Keep the original action ID.
+- Preserve the original discussion and responsibility history.
+- Link it to the new follow-up meeting.
+- Record the follow-up note.
+- Keep the current status.
+- Do not create duplicate active tasks.
+
+If an action needs a new owner or deadline, allow that update with an audit history.
+
+The same action must remain traceable across all meetings until completion.
+
+## 12. Departments and Employees
+
+### Department management
+
+Provide the ability to create, edit, activate, deactivate, and view departments.
+
+Each department should contain:
+
+- Department name.
+- Department head.
+- Description.
+- Active or inactive status.
+
+Preconfigure the departments found in the Excel workbook. Include Finance, Visa, IT, HR, Business Development, Operations, and Maintenance where supported by the source records.
+
+Allow combined responsibilities such as HR & Finance.
+
+### Employee management
+
+Each employee record should contain:
+
+- Full name.
+- Designation.
+- Department.
+- Email address, if available.
+- Active or inactive status.
+
+Use a reusable employee directory for selecting attendees, action owners, and approvers.
+
+Allow multiple responsible people for a single action.
+
+Preserve historical names and assignments if an employee later becomes inactive.
+
+Do not invent missing employee contact details.
+
+## 13. Excel Import — Essential Feature
+
+Build a working Excel import wizard to migrate the existing workbook.
+
+The provided workbook contains these worksheets:
+
+- 28th July 26_
+- 06th August 26
+- 16th October 26
+
+The workbook uses a structure similar to:
+
+- Department
+- Topic
+- Discussion / details
+- Action
+- Responsibility
+- Status
+
+It also includes meeting dates, attendees, and company information.
+
+### Import process
+
+1. Allow the user to upload an XLSX file.
+2. Read all worksheets in the workbook.
+3. Detect meeting dates from worksheet content, including dates such as 28 July 2026, 6 August 2026, and 16 October 2026.
+4. Identify meeting attendees and designations.
+5. Identify departmental agenda items and their discussions.
+6. Map existing action descriptions, responsibilities, and statuses.
+7. Show a preview of the parsed data before saving.
+8. Allow the user to correct field mappings and data errors.
+9. Validate required fields.
+10. Warn about potential duplicates.
+11. Allow the user to select individual sheets or import all sheets.
+12. Save valid records to Firestore.
+13. Show a detailed import report with successful records, skipped records, and errors.
+
+Handle merged cells, blank rows, repeated department names, multiline text, missing statuses, and inconsistent column positions.
+
+Never silently discard rows containing meaningful data.
+
+If a status is blank in the source workbook, preserve it as Unspecified or Not Set until reviewed. Do not assume that a blank status means completed.
+
+If a date is missing or ambiguous, flag it for review rather than inventing a date.
+
+The importer must work with the uploaded workbook's actual structure, not just an artificially simplified template.
+
+## 14. Excel and PDF Export
+
+Provide the following export features:
+
+### Excel export
+
+- Export all meetings.
+- Export a selected meeting.
+- Export selected departments.
+- Export all action items.
+- Export pending and overdue actions.
+- Export filtered report results.
+
+For a single meeting, create a readable workbook with meeting details and agenda items. Optionally create separate worksheets for the meeting summary, attendees, agenda items, and actions.
+
+### PDF export
+
+Generate professional A4 PDF meeting minutes containing:
+
+- Company name.
+- Meeting date and title.
+- Attendees.
+- Department headings.
+- Discussions and decisions.
+- Action items.
+- Responsible persons.
+- Deadlines and statuses.
+- Page numbers and export date.
+
+Use a print-friendly white document background even though the web application has a dark theme.
+
+Support both a full-meeting PDF and a filtered departmental PDF.
+
+The PDF must handle long discussions, page breaks, multiple departments, and multi-page tables correctly.
+
+Provide Print, Download PDF, and Export Excel buttons.
+
+## 15. Reports and Analytics
+
+Build a reporting module using real database information.
+
+Include:
+
+- Meetings held by month.
+- Number of agenda items by department.
+- Actions assigned by department.
+- Completed versus outstanding actions.
+- Overdue actions by responsible person.
+- Completion rate by department.
+- Actions created and completed over time.
+- Outstanding actions by priority.
+- Recurring topics across meetings.
+
+Provide date range, department, and status filters.
+
+Use readable charts, summary cards, and detailed data tables.
+
+Every chart must respond to filter changes and show actual calculated values. Do not fabricate sample statistics.
+
+Allow reports to be exported to Excel and PDF.
+
+## 16. Search
+
+Implement global search for:
+
+- Meeting date.
+- Meeting title.
+- Department.
+- Topic.
+- Discussion text.
+- Decisions.
+- Action descriptions.
+- Responsible persons.
+
+Show matching records with their meeting date, department, and topic.
+
+Clicking a result should open the relevant meeting and agenda item.
+
+Provide useful empty states when no results are found.
+
+## 17. Authentication and Permissions
+
+Implement secure authentication and role-based access control.
+
+### Roles
+
+**Administrator**
+- Manage users and roles.
+- Manage departments and system settings.
+- Import and export records.
+- Create, edit, archive, and restore meetings.
+- Manage all agenda items and action items.
+- Access audit logs.
+
+**Management / Approver**
+- View all meetings.
+- Review and approve minutes.
+- View departmental performance.
+- Update authorized decisions and actions.
+- Access management reports.
+
+**Department Head**
+- View meetings relevant to their responsibilities and any records explicitly shared with them.
+- Create or edit departmental agenda items as permitted.
+- Assign and update departmental actions.
+- View their department's reports.
+
+**Employee**
+- View authorized meeting records.
+- View assigned actions.
+- Update permitted action statuses.
+- Add progress notes.
+
+Apply authorization at both the interface and backend/database security levels. Hiding a button is not sufficient security.
+
+Use Firebase Security Rules to enforce access restrictions. Prevent unauthorized users from reading or modifying restricted records.
+
+## 18. Approval Workflow and Audit Logs
+
+Support the following optional meeting lifecycle:
+
+- Draft
+- Under Review
+- Approved
+- Archived
+
+Authorized users must be able to submit minutes for review and approve or return them for revision.
+
+Store the approval status, approver, and approval timestamp.
+
+Once minutes are approved, restrict editing to authorized roles. Corrections must preserve an audit trail.
+
+Maintain an audit log for important operations:
+
+- Meeting creation and editing.
+- Agenda item changes.
+- Action assignments and reassignment.
+- Status changes.
+- Deadline changes.
+- Approvals.
+- Archiving and restoration.
+- Import and export activity.
+
+Include user identity and timestamps wherever appropriate.
+
+## 19. Database Design
+
+Design a normalized, maintainable Firestore data model.
+
+Recommended collections:
+
+**users**
+- uid
+- displayName
+- email
+- role
+- departmentIds
+- active
+- createdAt
+
+**departments**
+- id
+- name
+- headUserId
+- description
+- active
+
+**meetings**
+- id
+- title
+- meetingDate
+- startTime
+- endTime
+- venue
+- chairperson
+- organizerId
+- attendeeSnapshots
+- objectives
+- generalNotes
+- lifecycleStatus
+- createdBy
+- createdAt
+- updatedAt
+- approvedBy
+- approvedAt
+
+**agendaItems**
+- id
+- meetingId
+- departmentId
+- topic
+- discussion
+- decision
+- additionalNotes
+- sortOrder
+- createdBy
+- createdAt
+- updatedAt
+
+**actionItems**
+- id
+- agendaItemId
+- originalMeetingId
+- followUpMeetingIds
+- description
+- assigneeIds
+- assignedDate
+- dueDate
+- priority
+- status
+- progressNotes
+- createdBy
+- createdAt
+- updatedAt
+- completedAt
+
+**actionHistory**
+- id
+- actionItemId
+- changedBy
+- changeType
+- previousValue
+- newValue
+- note
+- timestamp
+
+**auditLogs**
+- id
+- userId
+- operation
+- entityType
+- entityId
+- details
+- timestamp
+
+Adjust the schema when required by the actual application. Use stable document IDs, server timestamps, appropriate query indexes, and secure access rules.
+
+Store attendee and assignee references consistently. Where historical accuracy is important, preserve snapshots of names and designations.
+
+Use Firestore batch writes or transactions for related updates where appropriate. Prevent accidental data loss and partial imports.
+
+## 20. User Experience Requirements
+
+Every visible interactive control must work.
+
+Implement:
+
+- Functional buttons and links.
+- Validated forms.
+- Save, cancel, and edit actions.
+- Confirmation dialogs for destructive operations.
+- Success and error notifications.
+- Search and filter controls.
+- Pagination or efficient data loading for large datasets.
+- Loading indicators.
+- Empty states.
+- Responsive navigation.
+- Accessible form labels.
+- Useful validation messages.
+- Confirmation before leaving forms with unsaved changes.
+- Automatic timestamps for created and updated records.
+
+Do not use fake charts, decorative buttons without actions, dead-end navigation, hardcoded database responses, or placeholder forms presented as complete features.
+
+## 21. Required Pages
+
+Build and connect all of the following pages:
+
+1. Login.
+2. Dashboard.
+3. All Meetings.
+4. Create Meeting.
+5. Meeting Details.
+6. Meeting Minutes Editor.
+7. Departmental Minutes View.
+8. Action Tracker.
+9. Action Details.
+10. Departments.
+11. Employee Directory.
+12. Reports & Analytics.
+13. Excel Import Wizard.
+14. Export Center.
+15. User Management.
+16. Audit Log.
+17. Settings.
+18. Not Found / 404.
+
+Use a consistent design system and reusable UI components across every page.
+
+## 22. Development and Implementation Strategy
+
+Build the actual application in a logical order.
+
+### Phase 1 — Foundation
+- Set up the React and TypeScript application.
+- Implement the dark green and purple design system.
+- Create the sidebar, header, routing, and responsive layout.
+- Configure Firebase Authentication and Firestore.
+- Define TypeScript interfaces and database operations.
+
+### Phase 2 — Core meeting workflow
+- Create meetings.
+- Manage attendees.
+- Add departmental agenda items.
+- Record discussions and decisions.
+- Assign multiple action owners.
+- Update statuses and deadlines.
+- Save and retrieve records from Firestore.
+
+### Phase 3 — Action tracking
+- Build the global action tracker.
+- Implement filters, priorities, due dates, and overdue calculations.
+- Add carry-forward functionality.
+- Record status and assignment history.
+
+### Phase 4 — Excel migration
+- Implement the real XLSX importer.
+- Preview and validate records.
+- Import all three existing meeting sheets.
+- Verify the imported data against the source workbook.
+
+### Phase 5 — Documents and reporting
+- Implement PDF and Excel exports.
+- Build meeting print views.
+- Add analytics and report filters.
+- Implement the approval workflow.
+
+### Phase 6 — Security and testing
+- Implement role-based permissions and Firebase Security Rules.
+- Test all forms, database operations, filters, exports, and imports.
+- Verify mobile and desktop layouts.
+- Fix runtime errors and incomplete functionality.
+
+Do not stop after building the dashboard or the first few screens. Continue implementing the complete application and its interconnected workflows.
+
+## 23. Acceptance Criteria
+
+The application is only considered complete when the following requirements have been verified:
+
+1. A user can log in and access the appropriate pages for their role.
+2. An authorized user can create a meeting using a date picker.
+3. A single meeting can contain multiple departments and agenda items.
+4. Each agenda item supports a topic, discussion, decision, actions, assignees, deadlines, and status.
+5. Selecting a meeting date displays the correct historical meeting.
+6. Filtering by department displays only matching agenda items.
+7. Records remain available after refreshing the browser.
+8. An unfinished action can be followed up in a later meeting without losing its original history.
+9. Search, filters, and status updates work against real data.
+10. The uploaded Excel workbook can be parsed, previewed, and imported without silently losing meaningful records.
+11. Imported meeting dates, attendees, departments, discussions, responsibilities, and statuses match the source workbook.
+12. Users can export a selected meeting to a properly formatted PDF and Excel file.
+13. Reports calculate actual values from the database.
+14. Unauthorized users cannot bypass permissions through direct database access.
+15. Errors, loading states, and empty states are handled correctly.
+16. All required pages, buttons, and navigation paths are functional.
+17. The application can be configured, deployed, and used by authorized ABSS employees.
+
+## 24. Final Instructions
+
+First, inspect the uploaded Excel workbook and map its real structure, including all worksheets, merged cells, meeting headers, attendees, departments, discussions, action descriptions, responsibilities, and statuses.
+
+Then build the application using that structure as the source of truth.
+
+Prioritize data accuracy, reliable storage, security, usability, and a complete end-to-end workflow over decorative features.
+
+Use sensible defaults without repeatedly asking for minor design decisions.
+
+Do not fabricate missing data, credentials, employee details, historical decisions, or successful test results.
+
+If any required external service needs configuration, clearly identify the configuration required and provide the exact setup steps.
+
+**Deliverable:** A complete, responsive, dark-themed ABSS Meeting Minutes Management System with green and purple accents, real persistent storage, Excel migration, departmental filtering, action tracking, PDF/Excel export, reporting, authentication, and role-based access control.

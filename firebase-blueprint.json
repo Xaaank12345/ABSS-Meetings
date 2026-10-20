@@ -1,0 +1,272 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user with role and department assignments",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "displayName": { "type": "string" },
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "management", "dept_head", "employee"] },
+        "departmentIds": { "type": "array" },
+        "active": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["uid", "displayName", "email", "role"]
+    },
+    "Department": {
+      "title": "Department",
+      "description": "Organizational department within AB STAR SANDS",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "code": { "type": "string" },
+        "headUserId": { "type": "string" },
+        "headName": { "type": "string" },
+        "description": { "type": "string" },
+        "active": { "type": "boolean" }
+      },
+      "required": ["id", "name"]
+    },
+    "Meeting": {
+      "title": "Meeting",
+      "description": "Scheduled meeting record and minutes container",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "meetingDate": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "venue": { "type": "string" },
+        "chairperson": { "type": "string" },
+        "organizerId": { "type": "string" },
+        "organizerName": { "type": "string" },
+        "meetingType": { "type": "string" },
+        "lifecycleStatus": { "type": "string", "enum": ["Draft", "Upcoming", "In Progress", "Completed", "Archived"] },
+        "submissionDeadline": { "type": "string" },
+        "participatingDepartmentIds": { "type": "array" },
+        "attendees": { "type": "array" },
+        "objectives": { "type": "string" },
+        "generalNotes": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "title", "meetingDate", "lifecycleStatus"]
+    },
+    "MeetingSubmission": {
+      "title": "MeetingSubmission",
+      "description": "Department Head submission package for an upcoming meeting",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "meetingId": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "departmentName": { "type": "string" },
+        "submittedBy": { "type": "string" },
+        "submittedByName": { "type": "string" },
+        "status": {
+          "type": "string",
+          "enum": ["Draft", "Submitted", "Under Review", "Changes Requested", "Approved", "Included in Meeting Agenda", "Discussed", "Deferred to a Future Meeting"]
+        },
+        "submissionDeadline": { "type": "string" },
+        "submittedAt": { "type": "string" },
+        "reviewedBy": { "type": "string" },
+        "reviewedByName": { "type": "string" },
+        "reviewedAt": { "type": "string" },
+        "reviewerComments": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "meetingId", "departmentId", "status"]
+    },
+    "FollowUpUpdate": {
+      "title": "FollowUpUpdate",
+      "description": "Progress update on previous meeting action item without overwriting original record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "submissionId": { "type": "string" },
+        "originalMeetingId": { "type": "string" },
+        "upcomingMeetingId": { "type": "string" },
+        "actionItemId": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "submittedBy": { "type": "string" },
+        "submittedByName": { "type": "string" },
+        "topic": { "type": "string" },
+        "previousDecision": { "type": "string" },
+        "previousResponsiblePerson": { "type": "string" },
+        "previousDueDate": { "type": "string" },
+        "progressUpdate": { "type": "string" },
+        "status": { "type": "string", "enum": ["Not Started", "In Progress", "Pending External Party", "On Hold", "Completed", "Cancelled"] },
+        "delayReason": { "type": "string" },
+        "revisedDueDate": { "type": "string" },
+        "managementSupportRequired": { "type": "string" },
+        "additionalComments": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "actionItemId", "departmentId", "status"]
+    },
+    "ProposedAgendaItem": {
+      "title": "ProposedAgendaItem",
+      "description": "New topic proposed by department head for upcoming meeting discussion",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "submissionId": { "type": "string" },
+        "meetingId": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "departmentName": { "type": "string" },
+        "topic": { "type": "string" },
+        "description": { "type": "string" },
+        "reason": { "type": "string" },
+        "currentSituation": { "type": "string" },
+        "businessImpact": { "type": "string" },
+        "proposedSolution": { "type": "string" },
+        "decisionRequired": { "type": "string" },
+        "resourcesRequired": { "type": "string" },
+        "relatedDepartments": { "type": "string" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "status": { "type": "string", "enum": ["Draft", "Submitted", "Approved", "Changes Requested", "Rejected", "Deferred to a Future Meeting", "Discussed", "Included in Meeting Agenda"] },
+        "reviewerComments": { "type": "string" },
+        "agendaOrder": { "type": "number" },
+        "discussionMinutes": { "type": "string" },
+        "agreedDecision": { "type": "string" },
+        "agreedAction": { "type": "string" },
+        "actionAssignee": { "type": "string" },
+        "actionDueDate": { "type": "string" },
+        "attachments": { "type": "array" },
+        "createdBy": { "type": "string" },
+        "createdByName": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "meetingId", "departmentId", "topic", "priority", "status"]
+    },
+    "ActionItem": {
+      "title": "ActionItem",
+      "description": "Accountability and task item tracked across meetings",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "originalMeetingId": { "type": "string" },
+        "originalMeetingDate": { "type": "string" },
+        "agendaItemId": { "type": "string" },
+        "departmentId": { "type": "string" },
+        "departmentName": { "type": "string" },
+        "topic": { "type": "string" },
+        "description": { "type": "string" },
+        "responsiblePerson": { "type": "string" },
+        "assigneeIds": { "type": "array" },
+        "assignedDate": { "type": "string" },
+        "dueDate": { "type": "string" },
+        "revisedDueDate": { "type": "string" },
+        "priority": { "type": "string" },
+        "status": { "type": "string", "enum": ["Not Started", "In Progress", "Pending External Party", "On Hold", "Completed", "Cancelled"] },
+        "progressNotes": { "type": "string" },
+        "delayReason": { "type": "string" },
+        "followUpMeetingIds": { "type": "array" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "originalMeetingId", "departmentId", "description", "status"]
+    },
+    "ActionHistory": {
+      "title": "ActionHistory",
+      "description": "Audit trail of action item status and deadline updates",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "actionItemId": { "type": "string" },
+        "changedBy": { "type": "string" },
+        "changedByName": { "type": "string" },
+        "changeType": { "type": "string" },
+        "previousValue": { "type": "string" },
+        "newValue": { "type": "string" },
+        "note": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "actionItemId", "changeType", "timestamp"]
+    },
+    "Notification": {
+      "title": "Notification",
+      "description": "In-app notifications for meeting deadlines, submission status, and change requests",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "targetDepartmentId": { "type": "string" },
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "type": { "type": "string" },
+        "meetingId": { "type": "string" },
+        "read": { "type": "boolean" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "title", "message"]
+    },
+    "AuditLog": {
+      "title": "AuditLog",
+      "description": "Security and compliance audit trail for meeting minutes and submissions",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "operation": { "type": "string" },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "details": { "type": "string" },
+        "timestamp": { "type": "string" }
+      },
+      "required": ["id", "userId", "operation", "entityType"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "User profiles and permissions"
+    },
+    "/departments/{departmentId}": {
+      "schema": { "$ref": "#/entities/Department" },
+      "description": "Corporate departments list"
+    },
+    "/meetings/{meetingId}": {
+      "schema": { "$ref": "#/entities/Meeting" },
+      "description": "Official company meetings"
+    },
+    "/meetingSubmissions/{submissionId}": {
+      "schema": { "$ref": "#/entities/MeetingSubmission" },
+      "description": "Department Head submissions for meetings"
+    },
+    "/followUpUpdates/{updateId}": {
+      "schema": { "$ref": "#/entities/FollowUpUpdate" },
+      "description": "Historical action item follow-up updates"
+    },
+    "/proposedAgendaItems/{itemId}": {
+      "schema": { "$ref": "#/entities/ProposedAgendaItem" },
+      "description": "Department head proposed discussion items for upcoming meetings"
+    },
+    "/actionItems/{actionItemId}": {
+      "schema": { "$ref": "#/entities/ActionItem" },
+      "description": "Company-wide action items tracker"
+    },
+    "/actionHistory/{historyId}": {
+      "schema": { "$ref": "#/entities/ActionHistory" },
+      "description": "Audit trail of action modifications"
+    },
+    "/notifications/{notificationId}": {
+      "schema": { "$ref": "#/entities/Notification" },
+      "description": "User in-app notifications"
+    },
+    "/auditLogs/{logId}": {
+      "schema": { "$ref": "#/entities/AuditLog" },
+      "description": "System-wide activity and audit log"
+    }
+  }
+}

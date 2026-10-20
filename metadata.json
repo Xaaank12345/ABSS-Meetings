@@ -1,0 +1,8 @@
+{
+  "name": "ABSS Meeting Minutes Management System",
+  "description": "Departmental meeting preparation, minutes submission, follow-up tracking, and consolidated agenda management for AB STAR SANDS (PVT) LTD.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
