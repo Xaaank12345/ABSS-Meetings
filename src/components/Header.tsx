@@ -152,30 +152,38 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="text-[11px] text-[#22C55E] mt-0.5">{currentUser.designation}</div>
               </div>
 
-              <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-[#8B5CF6] tracking-wider">
-                Switch Test Profile (Department Heads & Management)
-              </div>
-
-              <div className="max-h-56 overflow-y-auto">
-                {allUsers.map((u) => (
-                  <button
-                    key={u.uid}
-                    onClick={() => {
-                      switchUserById(u.uid);
-                      setShowUserMenu(false);
-                    }}
-                    className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#242432] transition-colors ${
-                      u.uid === currentUser.uid ? 'bg-[#242432] text-[#22C55E] font-medium' : 'text-[#F5F5F7]'
-                    }`}
-                  >
-                    <div>
-                      <div className="font-medium">{u.displayName}</div>
-                      <div className="text-[10px] text-[#A1A1B5]">{u.departmentName || u.designation}</div>
-                    </div>
-                    {u.uid === currentUser.uid && <UserCheck className="w-3.5 h-3.5 text-[#22C55E]" />}
-                  </button>
-                ))}
-              </div>
+              {allUsers.length > 1 ? (
+                <>
+                  <div className="px-3 py-1.5 text-[10px] uppercase font-semibold text-[#8B5CF6] tracking-wider">
+                    Switch User Profile
+                  </div>
+                  <div className="max-h-56 overflow-y-auto">
+                    {allUsers.map((u) => (
+                      <button
+                        key={u.uid}
+                        onClick={() => {
+                          switchUserById(u.uid);
+                          setShowUserMenu(false);
+                        }}
+                        className={`w-full px-3 py-2 text-left text-xs flex items-center justify-between hover:bg-[#242432] transition-colors ${
+                          u.uid === currentUser.uid ? 'bg-[#242432] text-[#22C55E] font-medium' : 'text-[#F5F5F7]'
+                        }`}
+                      >
+                        <div>
+                          <div className="font-medium">{u.displayName}</div>
+                          <div className="text-[10px] text-[#A1A1B5]">{u.departmentName || u.designation}</div>
+                        </div>
+                        {u.uid === currentUser.uid && <UserCheck className="w-3.5 h-3.5 text-[#22C55E]" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="px-3 py-2 text-[11px] text-[#A1A1B5] bg-[#15151C]/50 rounded-lg m-2">
+                  <span className="text-[#22C55E] font-semibold block mb-0.5">Single Admin Mode</span>
+                  Full management access across all ABSS departments and meetings.
+                </div>
+              )}
 
               <div className="border-t border-[#30303D] mt-2 pt-1 px-2 flex flex-col gap-1">
                 <button

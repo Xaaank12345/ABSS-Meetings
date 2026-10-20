@@ -3,24 +3,42 @@ import { User } from '../types';
 import { INITIAL_USERS } from '../services/seedData';
 import { auth } from '../services/firebase';
 import { onAuthStateChanged, signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth';
+import { getUsers, addUser } from '../services/db';
 
 interface AuthContextType {
   currentUser: User;
   allUsers: User[];
   setCurrentUser: (user: User) => void;
   switchUserById: (userId: string) => void;
+  createNewUser: (user: Omit<User, 'uid' | 'createdAt'>) => Promise<User>;
   isAuthorizedForDepartment: (deptId: string) => boolean;
   isManagementOrAdmin: boolean;
   signInWithGoogle: () => Promise<void>;
   logOut: () => Promise<void>;
+  refreshUsers: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default to HR Head Fatima Zahra so Department Head dashboard & submission workflow is immediately front & center!
-  const [currentUser, setCurrentUser] = useState<User>(INITIAL_USERS[1]); // Fatima Zahra (HR)
-  const [allUsers] = useState<User[]>(INITIAL_USERS);
+  // Start with the single Admin user
+  const [currentUser, setCurrentUser] = useState<User>(INITIAL_USERS[0]);
+  const [allUsers, setAllUsers] = useState<User[]>(INITIAL_USERS);
+
+  const refreshUsers = async () => {
+    try {
+      const dbUsers = await getUsers();
+      if (dbUsers && dbUsers.length > 0) {
+        setAllUsers(dbUsers);
+      }
+    } catch (e) {
+      console.warn('Failed refreshing users:', e);
+    }
+  };
+
+  useEffect(() => {
+    refreshUsers();
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -30,19 +48,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (existing) {
           setCurrentUser(existing);
         } else {
-          // Default to admin profile with their email
-          const newAdmin: User = {
+          // Grant admin rights to the authenticated user
+          const adminProfile: User = {
             uid: firebaseUser.uid,
-            displayName: firebaseUser.displayName || 'Authorized User',
-            email: firebaseUser.email || 'user@abstarsands.com',
+            displayName: firebaseUser.displayName || 'Engr. Ahmed Al-Saeed',
+            email: firebaseUser.email || 'admin@abstarsands.com',
             role: 'admin',
             departmentIds: ['dept-hr', 'dept-fin', 'dept-visa', 'dept-it', 'dept-ops', 'dept-maint', 'dept-bd'],
             departmentName: 'Executive Management',
-            designation: 'Executive Administrator',
+            designation: 'Managing Director & System Administrator',
             active: true,
             createdAt: new Date().toISOString()
           };
-          setCurrentUser(newAdmin);
+          setCurrentUser(adminProfile);
         }
       }
     });
@@ -54,6 +72,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (found) {
       setCurrentUser(found);
     }
+  };
+
+  const createNewUser = async (userData: Omit<User, 'uid' | 'createdAt'>): Promise<User> => {
+    const newUser: User = {
+      ...userData,
+      uid: `user-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    await addUser(newUser);
+    setAllUsers(prev => [...prev, newUser]);
+    return newUser;
   };
 
   const isAuthorizedForDepartment = (deptId: string): boolean => {
@@ -75,8 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logOut = async () => {
     try {
       await signOut(auth);
-      // Revert to demo user
-      setCurrentUser(INITIAL_USERS[1]);
+      // Reset to default admin user
+      setCurrentUser(INITIAL_USERS[0]);
     } catch (e) {
       console.warn('Logout error:', e);
     }
@@ -89,10 +118,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         allUsers,
         setCurrentUser,
         switchUserById,
+        createNewUser,
         isAuthorizedForDepartment,
         isManagementOrAdmin,
         signInWithGoogle,
-        logOut
+        logOut,
+        refreshUsers
       }}
     >
       {children}

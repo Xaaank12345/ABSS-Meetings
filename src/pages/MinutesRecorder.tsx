@@ -4,6 +4,7 @@ import {
   Department,
   Meeting,
   ProposedAgendaItem,
+  ProposedItemStatus,
   ActionItem,
   PriorityLevel
 } from '../types';
@@ -60,7 +61,7 @@ export const MinutesRecorder: React.FC<MinutesRecorderProps> = ({
   const [actionText, setActionText] = useState<string>('');
   const [assigneeName, setAssigneeName] = useState<string>('');
   const [dueDateStr, setDueDateStr] = useState<string>('');
-  const [meetingStatus, setMeetingStatus] = useState<'Discussed' | 'Deferred to a Future Meeting' | 'Not Discussed'>('Discussed');
+  const [meetingStatus, setMeetingStatus] = useState<ProposedItemStatus>('Discussed');
 
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -359,12 +360,12 @@ export const MinutesRecorder: React.FC<MinutesRecorderProps> = ({
                 <label className="text-xs font-semibold text-[#F5F5F7] block mb-1">Topic Outcome Status</label>
                 <select
                   value={meetingStatus}
-                  onChange={(e) => setMeetingStatus(e.target.value as any)}
+                  onChange={(e) => setMeetingStatus(e.target.value as ProposedItemStatus)}
                   className="w-full bg-[#15151C] border border-[#30303D] rounded-lg p-2 text-xs text-[#F5F5F7]"
                 >
                   <option value="Discussed">Discussed & Decision Taken</option>
                   <option value="Deferred to a Future Meeting">Deferred to Future Meeting</option>
-                  <option value="Not Discussed">Not Discussed (Time Limit)</option>
+                  <option value="Rejected">Rejected</option>
                 </select>
               </div>
 

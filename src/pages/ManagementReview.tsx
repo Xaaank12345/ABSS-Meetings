@@ -275,21 +275,35 @@ export const ManagementReview: React.FC<ManagementReviewProps> = ({
               onChange={(e) => setSelectedMeetingId(e.target.value)}
               className="bg-[#15151C] border border-[#30303D] rounded-lg px-3 py-1.5 text-xs text-[#F5F5F7] focus:outline-none focus:border-[#8B5CF6]"
             >
-              {meetings.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.meetingDate} — {m.title}
-                </option>
-              ))}
+              {meetings.length === 0 ? (
+                <option value="">No meetings scheduled</option>
+              ) : (
+                meetings.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.meetingDate} — {m.title}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
           <div className="flex items-center gap-2 text-xs text-[#A1A1B5]">
-            <span>Chairperson: <strong className="text-[#F5F5F7]">{selectedMeeting?.chairperson}</strong></span>
+            <span>Chairperson: <strong className="text-[#F5F5F7]">{selectedMeeting?.chairperson || 'Administrator'}</strong></span>
             <span>•</span>
-            <span>Venue: <strong className="text-[#F5F5F7]">{selectedMeeting?.venue}</strong></span>
+            <span>Venue: <strong className="text-[#F5F5F7]">{selectedMeeting?.venue || 'TBD'}</strong></span>
           </div>
         </div>
       </div>
+
+      {meetings.length === 0 && (
+        <div className="bg-[#1B1B25] border border-dashed border-[#30303D] rounded-xl p-8 text-center space-y-2">
+          <Calendar className="w-8 h-8 text-[#8B5CF6] mx-auto opacity-70" />
+          <h3 className="text-sm font-bold text-[#F5F5F7]">No meetings to review</h3>
+          <p className="text-xs text-[#A1A1B5] max-w-md mx-auto">
+            There are currently no upcoming or completed meetings. Once an upcoming meeting is created, departmental preparations, follow-ups, and submitted agenda items will appear here for management review.
+          </p>
+        </div>
+      )}
 
       {/* Department Submission Progress Banner (Calculated from Actual DB Records) */}
       <div className="bg-[#1B1B25] border border-[#30303D] rounded-xl p-5 shadow-lg">

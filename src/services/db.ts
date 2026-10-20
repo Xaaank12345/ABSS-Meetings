@@ -4,12 +4,9 @@ import {
   getDocs,
   setDoc,
   updateDoc,
-  addDoc,
-  query,
-  where,
-  orderBy
+  deleteDoc
 } from 'firebase/firestore';
-import { db, handleFirestoreError, OperationType } from './firebase';
+import { db } from './firebase';
 import {
   Meeting,
   Department,
@@ -33,6 +30,50 @@ import {
   INITIAL_NOTIFICATIONS
 } from './seedData';
 
+// Known legacy/pre-made IDs to purge from Firestore if previously synced
+const PREMADE_MEETING_IDS = [
+  'meet-2026-07-28',
+  'meet-2026-08-06',
+  'meet-2026-10-16',
+  'meet-2026-10-28'
+];
+
+const PREMADE_USER_IDS = [
+  'user-fatima-hr',
+  'user-shiraz-fin',
+  'user-tariq-visa',
+  'user-bilal-it',
+  'user-rashid-ops',
+  'user-reviewer-mgmt'
+];
+
+const PREMADE_ACTION_IDS = [
+  'act-hr-01',
+  'act-fin-01',
+  'act-visa-01',
+  'act-it-01',
+  'act-ops-01',
+  'act-maint-01',
+  'act-bd-01'
+];
+
+const PREMADE_SUBMISSION_IDS = [
+  'sub-2026-10-28-hr',
+  'sub-2026-10-28-fin',
+  'sub-2026-10-28-it'
+];
+
+const PREMADE_PROP_IDS = [
+  'prop-hr-01',
+  'prop-fin-01',
+  'prop-it-01'
+];
+
+const PREMADE_FUP_IDS = [
+  'fup-hr-01',
+  'fup-fin-01'
+];
+
 // Local cache for immediate high-speed reactive UI, backed by Firestore persistence
 let localDepartments: Department[] = [...INITIAL_DEPARTMENTS];
 let localUsers: User[] = [...INITIAL_USERS];
@@ -44,85 +85,218 @@ let localActions: ActionItem[] = [...INITIAL_ACTIONS];
 let localNotifications: AppNotification[] = [...INITIAL_NOTIFICATIONS];
 let localAuditLogs: AuditLog[] = [
   {
-    id: 'log-01',
+    id: 'log-init',
     userId: 'user-admin',
     userName: 'Engr. Ahmed Al-Saeed',
-    operation: 'CREATE_MEETING',
-    entityType: 'Meeting',
-    entityId: 'meet-2026-10-28',
-    details: 'Created Upcoming Management Meeting for 28th October 2026',
-    timestamp: '2026-10-17T09:00:00Z'
-  },
-  {
-    id: 'log-02',
-    userId: 'user-fatima-hr',
-    userName: 'Fatima Zahra',
-    operation: 'SUBMIT_PREPARATION',
-    entityType: 'MeetingSubmission',
-    entityId: 'sub-2026-10-28-hr',
-    details: 'Submitted HR agenda topics and action follow-ups for review',
-    timestamp: '2026-10-19T14:20:00Z'
+    operation: 'SYSTEM_INITIALIZATION',
+    entityType: 'System',
+    entityId: 'admin-mode',
+    details: 'System initialized in Single Admin mode for AB STAR SANDS (PVT) LTD.',
+    timestamp: new Date().toISOString()
   }
 ];
 
 let isInitialized = false;
 
+/**
+ * Purges any leftover pre-made items from Firestore to guarantee clean database state
+ */
+async function purgePremadeFirestoreRecords(): Promise<void> {
+  try {
+    for (const mId of PREMADE_MEETING_IDS) {
+      await deleteDoc(doc(db, 'meetings', mId)).catch(() => {});
+    }
+    for (const uId of PREMADE_USER_IDS) {
+      await deleteDoc(doc(db, 'users', uId)).catch(() => {});
+    }
+    for (const aId of PREMADE_ACTION_IDS) {
+      await deleteDoc(doc(db, 'actionItems', aId)).catch(() => {});
+    }
+    for (const sId of PREMADE_SUBMISSION_IDS) {
+      await deleteDoc(doc(db, 'meetingSubmissions', sId)).catch(() => {});
+    }
+    for (const pId of PREMADE_PROP_IDS) {
+      await deleteDoc(doc(db, 'proposedAgendaItems', pId)).catch(() => {});
+    }
+    for (const fId of PREMADE_FUP_IDS) {
+      await deleteDoc(doc(db, 'followUpUpdates', fId)).catch(() => {});
+    }
+    await deleteDoc(doc(db, 'notifications', 'notif-01')).catch(() => {});
+    await deleteDoc(doc(db, 'notifications', 'notif-02')).catch(() => {});
+    await deleteDoc(doc(db, 'notifications', 'notif-03')).catch(() => {});
+  } catch (err) {
+    console.warn('Silent purge of pre-made items:', err);
+  }
+}
+
 export async function initializeDatabase(): Promise<void> {
   if (isInitialized) return;
   try {
-    // Check if meetings exist in Firestore
-    const meetingsSnap = await getDocs(collection(db, 'meetings'));
-    if (meetingsSnap.empty) {
-      console.log('Seeding initial ABSS database to Firestore...');
-      // Batch seed
+    // 1. Purge legacy pre-made items
+    await purgePremadeFirestoreRecords();
+
+    // 2. Sync departments
+    const deptSnap = await getDocs(collection(db, 'departments'));
+    if (deptSnap.empty) {
       for (const d of INITIAL_DEPARTMENTS) {
-        await setDoc(doc(db, 'departments', d.id), d);
-      }
-      for (const u of INITIAL_USERS) {
-        await setDoc(doc(db, 'users', u.uid), u);
-      }
-      for (const m of INITIAL_MEETINGS) {
-        await setDoc(doc(db, 'meetings', m.id), m);
-      }
-      for (const a of INITIAL_ACTIONS) {
-        await setDoc(doc(db, 'actionItems', a.id), a);
-      }
-      for (const s of INITIAL_SUBMISSIONS) {
-        await setDoc(doc(db, 'meetingSubmissions', s.id), s);
-      }
-      for (const p of INITIAL_PROPOSED_ITEMS) {
-        await setDoc(doc(db, 'proposedAgendaItems', p.id), p);
-      }
-      for (const f of INITIAL_FOLLOW_UPS) {
-        await setDoc(doc(db, 'followUpUpdates', f.id), f);
-      }
-      for (const n of INITIAL_NOTIFICATIONS) {
-        await setDoc(doc(db, 'notifications', n.id), n);
+        await setDoc(doc(db, 'departments', d.id), d).catch(() => {});
       }
     } else {
-      // Load from Firestore into memory
-      localMeetings = meetingsSnap.docs.map(d => d.data() as Meeting);
-      
-      const deptSnap = await getDocs(collection(db, 'departments'));
-      if (!deptSnap.empty) localDepartments = deptSnap.docs.map(d => d.data() as Department);
-      
-      const subSnap = await getDocs(collection(db, 'meetingSubmissions'));
-      if (!subSnap.empty) localSubmissions = subSnap.docs.map(d => d.data() as MeetingSubmission);
-
-      const propSnap = await getDocs(collection(db, 'proposedAgendaItems'));
-      if (!propSnap.empty) localProposedItems = propSnap.docs.map(d => d.data() as ProposedAgendaItem);
-
-      const folSnap = await getDocs(collection(db, 'followUpUpdates'));
-      if (!folSnap.empty) localFollowUps = folSnap.docs.map(d => d.data() as FollowUpUpdate);
-
-      const actSnap = await getDocs(collection(db, 'actionItems'));
-      if (!actSnap.empty) localActions = actSnap.docs.map(d => d.data() as ActionItem);
+      localDepartments = deptSnap.docs.map(d => d.data() as Department);
     }
+
+    // 3. Sync admin user
+    const userSnap = await getDocs(collection(db, 'users'));
+    if (userSnap.empty) {
+      for (const u of INITIAL_USERS) {
+        await setDoc(doc(db, 'users', u.uid), u).catch(() => {});
+      }
+      localUsers = [...INITIAL_USERS];
+    } else {
+      const fetchedUsers = userSnap.docs
+        .map(d => d.data() as User)
+        .filter(u => !PREMADE_USER_IDS.includes(u.uid));
+      
+      // Ensure at least the main admin exists
+      if (!fetchedUsers.some(u => u.role === 'admin')) {
+        fetchedUsers.push(INITIAL_USERS[0]);
+        await setDoc(doc(db, 'users', INITIAL_USERS[0].uid), INITIAL_USERS[0]).catch(() => {});
+      }
+      localUsers = fetchedUsers;
+    }
+
+    // 4. Sync meetings (filter out any pre-made meeting IDs)
+    const meetingsSnap = await getDocs(collection(db, 'meetings'));
+    if (!meetingsSnap.empty) {
+      localMeetings = meetingsSnap.docs
+        .map(d => d.data() as Meeting)
+        .filter(m => !PREMADE_MEETING_IDS.includes(m.id));
+    } else {
+      localMeetings = [];
+    }
+
+    // 5. Sync action items (filter out pre-made action IDs)
+    const actSnap = await getDocs(collection(db, 'actionItems'));
+    if (!actSnap.empty) {
+      localActions = actSnap.docs
+        .map(d => d.data() as ActionItem)
+        .filter(a => !PREMADE_ACTION_IDS.includes(a.id));
+    } else {
+      localActions = [];
+    }
+
+    // 6. Sync submissions
+    const subSnap = await getDocs(collection(db, 'meetingSubmissions'));
+    if (!subSnap.empty) {
+      localSubmissions = subSnap.docs
+        .map(d => d.data() as MeetingSubmission)
+        .filter(s => !PREMADE_SUBMISSION_IDS.includes(s.id));
+    } else {
+      localSubmissions = [];
+    }
+
+    // 7. Sync proposed agenda items
+    const propSnap = await getDocs(collection(db, 'proposedAgendaItems'));
+    if (!propSnap.empty) {
+      localProposedItems = propSnap.docs
+        .map(d => d.data() as ProposedAgendaItem)
+        .filter(p => !PREMADE_PROP_IDS.includes(p.id));
+    } else {
+      localProposedItems = [];
+    }
+
+    // 8. Sync follow ups
+    const folSnap = await getDocs(collection(db, 'followUpUpdates'));
+    if (!folSnap.empty) {
+      localFollowUps = folSnap.docs
+        .map(d => d.data() as FollowUpUpdate)
+        .filter(f => !PREMADE_FUP_IDS.includes(f.id));
+    } else {
+      localFollowUps = [];
+    }
+
     isInitialized = true;
   } catch (error) {
-    console.warn('Firestore initial sync encountered an error, operating with local state cache:', error);
+    console.warn('Firestore initial sync operated with local clean state:', error);
     isInitialized = true;
   }
+}
+
+/**
+ * Resets all meetings and accounts back to single admin
+ */
+export async function resetToSingleAdminState(): Promise<void> {
+  localMeetings = [];
+  localActions = [];
+  localSubmissions = [];
+  localProposedItems = [];
+  localFollowUps = [];
+  localNotifications = [];
+  localUsers = [...INITIAL_USERS];
+  localDepartments = [...INITIAL_DEPARTMENTS];
+
+  await purgePremadeFirestoreRecords();
+
+  // Clean Firestore collections
+  try {
+    const meetSnap = await getDocs(collection(db, 'meetings'));
+    for (const d of meetSnap.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+
+    const subSnap = await getDocs(collection(db, 'meetingSubmissions'));
+    for (const d of subSnap.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+
+    const propSnap = await getDocs(collection(db, 'proposedAgendaItems'));
+    for (const d of propSnap.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+
+    const folSnap = await getDocs(collection(db, 'followUpUpdates'));
+    for (const d of folSnap.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+
+    const actSnap = await getDocs(collection(db, 'actionItems'));
+    for (const d of actSnap.docs) {
+      await deleteDoc(d.ref).catch(() => {});
+    }
+
+    const userSnap = await getDocs(collection(db, 'users'));
+    for (const d of userSnap.docs) {
+      if (d.id !== 'user-admin') {
+        await deleteDoc(d.ref).catch(() => {});
+      }
+    }
+
+    await setDoc(doc(db, 'users', INITIAL_USERS[0].uid), INITIAL_USERS[0]);
+  } catch (e) {
+    console.warn('Error during reset:', e);
+  }
+}
+
+// USERS
+export async function getUsers(): Promise<User[]> {
+  await initializeDatabase();
+  return [...localUsers];
+}
+
+export async function addUser(user: User): Promise<User> {
+  await initializeDatabase();
+  const existing = localUsers.findIndex(u => u.uid === user.uid);
+  if (existing !== -1) {
+    localUsers[existing] = user;
+  } else {
+    localUsers.push(user);
+  }
+  try {
+    await setDoc(doc(db, 'users', user.uid), user);
+  } catch (err) {
+    console.warn('Failed saving user to Firestore:', err);
+  }
+  return user;
 }
 
 // MEETINGS
@@ -146,7 +320,7 @@ export async function createMeeting(meetingData: Omit<Meeting, 'id' | 'createdAt
 
   localMeetings.push(newMeeting);
 
-  // Automatically create Notification for all participating department heads
+  // Automatically create notification for participating departments
   for (const deptId of newMeeting.participatingDepartmentIds) {
     const dept = localDepartments.find(d => d.id === deptId);
     if (dept) {
@@ -154,7 +328,7 @@ export async function createMeeting(meetingData: Omit<Meeting, 'id' | 'createdAt
         id: `notif-${Date.now()}-${deptId}`,
         targetDepartmentId: deptId,
         title: `Upcoming Meeting Submissions Open: ${newMeeting.title}`,
-        message: `Please submit previous action follow-ups and new discussion topics before ${newMeeting.submissionDeadline || 'deadline'}.`,
+        message: `Please submit previous action follow-ups and new discussion topics before ${newMeeting.submissionDeadline || 'the deadline'}.`,
         type: 'new_meeting',
         meetingId: newMeeting.id,
         read: false,
@@ -197,16 +371,31 @@ export async function updateMeeting(id: string, updates: Partial<Meeting>): Prom
   }
 }
 
+export async function deleteMeeting(id: string): Promise<void> {
+  localMeetings = localMeetings.filter(m => m.id !== id);
+  try {
+    await deleteDoc(doc(db, 'meetings', id));
+  } catch (e) {
+    console.warn('Failed deleting meeting from Firestore:', e);
+  }
+}
+
 // DEPARTMENTS
 export async function getDepartments(): Promise<Department[]> {
   await initializeDatabase();
   return [...localDepartments];
 }
 
-// USERS
-export async function getUsers(): Promise<User[]> {
-  await initializeDatabase();
-  return [...localUsers];
+export async function updateDepartment(id: string, updates: Partial<Department>): Promise<void> {
+  const idx = localDepartments.findIndex(d => d.id === id);
+  if (idx !== -1) {
+    localDepartments[idx] = { ...localDepartments[idx], ...updates };
+    try {
+      await updateDoc(doc(db, 'departments', id), updates);
+    } catch (e) {
+      console.warn('Failed updating department in Firestore:', e);
+    }
+  }
 }
 
 // SUBMISSIONS
@@ -215,33 +404,42 @@ export async function getMeetingSubmissions(meetingId: string): Promise<MeetingS
   return localSubmissions.filter(s => s.meetingId === meetingId);
 }
 
-export async function getDepartmentSubmission(meetingId: string, departmentId: string): Promise<MeetingSubmission | undefined> {
+export async function getSubmission(meetingId: string, departmentId: string): Promise<MeetingSubmission | undefined> {
   await initializeDatabase();
   return localSubmissions.find(s => s.meetingId === meetingId && s.departmentId === departmentId);
 }
 
-export async function saveOrUpdateSubmission(
-  submission: Omit<MeetingSubmission, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }
-): Promise<MeetingSubmission> {
+export async function saveOrUpdateSubmission(submission: Partial<MeetingSubmission> & { meetingId: string; departmentId: string }): Promise<MeetingSubmission> {
   await initializeDatabase();
-  const existingIdx = localSubmissions.findIndex(
-    s => s.id === submission.id || (s.meetingId === submission.meetingId && s.departmentId === submission.departmentId)
+  const existingIndex = localSubmissions.findIndex(
+    s => s.meetingId === submission.meetingId && s.departmentId === submission.departmentId
   );
 
   const now = new Date().toISOString();
   let saved: MeetingSubmission;
 
-  if (existingIdx !== -1) {
+  if (existingIndex !== -1) {
     saved = {
-      ...localSubmissions[existingIdx],
+      ...localSubmissions[existingIndex],
       ...submission,
       updatedAt: now
     };
-    localSubmissions[existingIdx] = saved;
+    localSubmissions[existingIndex] = saved;
   } else {
     saved = {
-      ...submission,
       id: submission.id || `sub-${submission.meetingId}-${submission.departmentId}`,
+      meetingId: submission.meetingId,
+      departmentId: submission.departmentId,
+      departmentName: submission.departmentName || '',
+      submittedBy: submission.submittedBy || 'user-admin',
+      submittedByName: submission.submittedByName || 'Admin',
+      status: submission.status || 'Draft',
+      submittedAt: submission.status === 'Submitted' ? now : undefined,
+      submissionDeadline: submission.submissionDeadline,
+      reviewerComments: submission.reviewerComments,
+      reviewedBy: submission.reviewedBy,
+      reviewedByName: submission.reviewedByName,
+      reviewedAt: submission.reviewedAt,
       createdAt: now,
       updatedAt: now
     };
@@ -250,18 +448,18 @@ export async function saveOrUpdateSubmission(
 
   try {
     await setDoc(doc(db, 'meetingSubmissions', saved.id), saved);
-  } catch (err) {
-    console.warn('Failed persisting submission:', err);
+  } catch (e) {
+    console.warn('Failed saving submission to Firestore:', e);
   }
 
   return saved;
 }
 
-// FOLLOW UP UPDATES (SECTION A)
-export async function getFollowUpsForMeeting(upcomingMeetingId: string, departmentId?: string): Promise<FollowUpUpdate[]> {
+// FOLLOW-UP UPDATES (SECTION A)
+export async function getFollowUpsForMeeting(meetingId: string, departmentId?: string): Promise<FollowUpUpdate[]> {
   await initializeDatabase();
-  return localFollowUps.filter(f => 
-    f.upcomingMeetingId === upcomingMeetingId && (!departmentId || f.departmentId === departmentId)
+  return localFollowUps.filter(f =>
+    f.upcomingMeetingId === meetingId && (!departmentId || f.departmentId === departmentId)
   );
 }
 
@@ -272,10 +470,11 @@ export async function getFollowUpHistoryForAction(actionItemId: string): Promise
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
-export async function saveFollowUpUpdate(followUp: Omit<FollowUpUpdate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<FollowUpUpdate> {
+export async function saveFollowUpUpdate(update: Omit<FollowUpUpdate, 'id' | 'createdAt' | 'updatedAt'> & { id?: string }): Promise<FollowUpUpdate> {
   await initializeDatabase();
-  const existingIdx = localFollowUps.findIndex(
-    f => f.id === followUp.id || (f.actionItemId === followUp.actionItemId && f.upcomingMeetingId === followUp.upcomingMeetingId)
+  const existingIdx = localFollowUps.findIndex(f =>
+    (update.id && f.id === update.id) ||
+    (f.upcomingMeetingId === update.upcomingMeetingId && f.actionItemId === update.actionItemId)
   );
 
   const now = new Date().toISOString();
@@ -284,14 +483,14 @@ export async function saveFollowUpUpdate(followUp: Omit<FollowUpUpdate, 'id' | '
   if (existingIdx !== -1) {
     saved = {
       ...localFollowUps[existingIdx],
-      ...followUp,
+      ...update,
       updatedAt: now
     };
     localFollowUps[existingIdx] = saved;
   } else {
     saved = {
-      ...followUp,
-      id: followUp.id || `fup-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      ...update,
+      id: update.id || `fup-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
       createdAt: now,
       updatedAt: now
     };
@@ -349,6 +548,11 @@ export async function saveProposedItem(item: Omit<ProposedAgendaItem, 'id' | 'cr
 
 export async function deleteProposedItem(id: string): Promise<void> {
   localProposedItems = localProposedItems.filter(p => p.id !== id);
+  try {
+    await deleteDoc(doc(db, 'proposedAgendaItems', id));
+  } catch (e) {
+    console.warn('Failed deleting proposed item from Firestore:', e);
+  }
 }
 
 // ACTION ITEMS & TRACKER

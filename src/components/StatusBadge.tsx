@@ -1,8 +1,8 @@
 import React from 'react';
-import { SubmissionStatus, ActionStatus, PriorityLevel, MeetingLifecycle } from '../types';
+import { SubmissionStatus, ActionStatus, PriorityLevel, MeetingLifecycle, ProposedItemStatus } from '../types';
 
 export const StatusBadge: React.FC<{
-  status: SubmissionStatus | ActionStatus | PriorityLevel | MeetingLifecycle | 'Not Started';
+  status: SubmissionStatus | ActionStatus | PriorityLevel | MeetingLifecycle | ProposedItemStatus | 'Not Started';
   size?: 'sm' | 'md' | 'lg';
 }> = ({ status, size = 'md' }) => {
   let colorStyles = 'bg-gray-800 text-gray-300 border-gray-700';

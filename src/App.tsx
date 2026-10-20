@@ -159,6 +159,7 @@ function MainApp() {
                   followUps={followUps}
                   onNavigateToWorkspace={() => setCurrentTab('submit-agenda')}
                   onNavigateToReview={() => setCurrentTab('management-review')}
+                  onNavigateToCreateMeeting={() => setCurrentTab('create-meeting')}
                 />
               )}
 

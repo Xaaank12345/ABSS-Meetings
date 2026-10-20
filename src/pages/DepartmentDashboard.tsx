@@ -32,6 +32,7 @@ interface DepartmentDashboardProps {
   followUps: FollowUpUpdate[];
   onNavigateToWorkspace: () => void;
   onNavigateToReview: () => void;
+  onNavigateToCreateMeeting?: () => void;
 }
 
 export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
@@ -42,7 +43,8 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
   proposedItems,
   followUps,
   onNavigateToWorkspace,
-  onNavigateToReview
+  onNavigateToReview,
+  onNavigateToCreateMeeting
 }) => {
   const { currentUser, isManagementOrAdmin } = useAuth();
 
@@ -51,15 +53,19 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
   const currentDept = departments.find(d => d.id === userDeptId) || departments[0];
 
   // Latest approved meeting and upcoming meeting
-  const upcomingMeeting = meetings.find(m => m.lifecycleStatus === 'Upcoming') || meetings[0];
-  const previousApprovedMeeting = meetings.find(
-    m => m.lifecycleStatus === 'Completed' && new Date(m.meetingDate) < new Date(upcomingMeeting?.meetingDate || '2026-10-28')
-  ) || meetings[1];
+  const upcomingMeeting = meetings.find(m => m.lifecycleStatus === 'Upcoming' || m.lifecycleStatus === 'Draft') || meetings[0];
+  const previousApprovedMeeting = upcomingMeeting
+    ? meetings.find(
+        m => m.lifecycleStatus === 'Completed' && new Date(m.meetingDate) < new Date(upcomingMeeting.meetingDate)
+      )
+    : meetings.find(m => m.lifecycleStatus === 'Completed');
 
   // Submissions for this department
-  const currentSubmission = submissions.find(
-    s => s.meetingId === upcomingMeeting?.id && s.departmentId === currentDept?.id
-  );
+  const currentSubmission = upcomingMeeting
+    ? submissions.find(
+        s => s.meetingId === upcomingMeeting.id && s.departmentId === currentDept?.id
+      )
+    : undefined;
 
   const submissionStatus = currentSubmission?.status || 'Not Started';
 
@@ -69,17 +75,21 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
   const completedActions = deptActions.filter(a => a.status === 'Completed');
 
   // Proposed topics for this upcoming meeting
-  const deptProposedItems = proposedItems.filter(
-    p => p.meetingId === upcomingMeeting?.id && p.departmentId === currentDept?.id
-  );
+  const deptProposedItems = upcomingMeeting
+    ? proposedItems.filter(
+        p => p.meetingId === upcomingMeeting.id && p.departmentId === currentDept?.id
+      )
+    : [];
 
   // Follow-ups updated for upcoming meeting
-  const deptFollowUps = followUps.filter(
-    f => f.upcomingMeetingId === upcomingMeeting?.id && f.departmentId === currentDept?.id
-  );
+  const deptFollowUps = upcomingMeeting
+    ? followUps.filter(
+        f => f.upcomingMeetingId === upcomingMeeting.id && f.departmentId === currentDept?.id
+      )
+    : [];
 
   // Check deadline
-  const deadlineStr = upcomingMeeting?.submissionDeadline || '2026-10-26 18:00';
+  const deadlineStr = upcomingMeeting?.submissionDeadline || 'No active deadline';
   const isChangesRequested = submissionStatus === 'Changes Requested';
 
   return (
@@ -107,13 +117,25 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={onNavigateToWorkspace}
-              className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#22C55E] to-[#10B981] text-gray-950 font-semibold text-xs flex items-center gap-2 hover:opacity-95 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer"
-            >
-              <span>Prepare Meeting Submission</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
+            {upcomingMeeting ? (
+              <button
+                onClick={onNavigateToWorkspace}
+                className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#22C55E] to-[#10B981] text-gray-950 font-semibold text-xs flex items-center gap-2 hover:opacity-95 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer"
+              >
+                <span>Prepare Meeting Submission</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+            ) : (
+              isManagementOrAdmin && onNavigateToCreateMeeting && (
+                <button
+                  onClick={onNavigateToCreateMeeting}
+                  className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-[#22C55E] to-[#10B981] text-gray-950 font-semibold text-xs flex items-center gap-2 hover:opacity-95 shadow-lg shadow-emerald-900/30 transition-all cursor-pointer"
+                >
+                  <span>Schedule First Meeting</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              )
+            )}
 
             {isManagementOrAdmin && (
               <button
@@ -151,8 +173,12 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
               Approved
             </span>
           </div>
-          <div className="text-base font-bold text-[#F5F5F7]">{previousApprovedMeeting?.meetingDate}</div>
-          <div className="text-xs text-[#A1A1B5] truncate mt-0.5">{previousApprovedMeeting?.title}</div>
+          <div className="text-base font-bold text-[#F5F5F7]">
+            {previousApprovedMeeting?.meetingDate || 'No Prior Records'}
+          </div>
+          <div className="text-xs text-[#A1A1B5] truncate mt-0.5">
+            {previousApprovedMeeting?.title || 'No previous approved minutes'}
+          </div>
           <div className="mt-3 pt-3 border-t border-[#30303D]/60 flex items-center justify-between text-xs">
             <span className="text-[#A1A1B5]">Actions Assigned:</span>
             <span className="font-semibold text-[#F5F5F7]">{deptActions.length} items</span>
@@ -167,14 +193,20 @@ export const DepartmentDashboard: React.FC<DepartmentDashboardProps> = ({
               Upcoming Meeting
             </span>
             <span className="text-[10px] bg-[#8B5CF6]/20 text-[#C4B5FD] px-2 py-0.5 rounded border border-[#8B5CF6]/30">
-              Upcoming
+              {upcomingMeeting ? 'Scheduled' : 'None Scheduled'}
             </span>
           </div>
-          <div className="text-base font-bold text-[#F5F5F7]">{upcomingMeeting?.meetingDate}</div>
-          <div className="text-xs text-[#A1A1B5] truncate mt-0.5">{upcomingMeeting?.title}</div>
+          <div className="text-base font-bold text-[#F5F5F7]">
+            {upcomingMeeting?.meetingDate || 'No Upcoming Meeting'}
+          </div>
+          <div className="text-xs text-[#A1A1B5] truncate mt-0.5">
+            {upcomingMeeting?.title || 'Waiting for Management to schedule'}
+          </div>
           <div className="mt-3 pt-3 border-t border-[#30303D]/60 flex items-center justify-between text-xs">
             <span className="text-[#A1A1B5]">Venue:</span>
-            <span className="font-medium text-[#F5F5F7] truncate max-w-[150px]">{upcomingMeeting?.venue}</span>
+            <span className="font-medium text-[#F5F5F7] truncate max-w-[150px]">
+              {upcomingMeeting?.venue || 'TBD'}
+            </span>
           </div>
         </div>
 

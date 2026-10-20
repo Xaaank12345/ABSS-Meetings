@@ -468,11 +468,15 @@ export const SubmissionWorkspace: React.FC<SubmissionWorkspaceProps> = ({
               onChange={(e) => setSelectedMeetingId(e.target.value)}
               className="w-full bg-[#15151C] border border-[#30303D] rounded-lg px-3 py-2 text-xs text-[#F5F5F7] focus:outline-none focus:border-[#8B5CF6]"
             >
-              {meetings.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.meetingDate} — {m.title} ({m.lifecycleStatus})
-                </option>
-              ))}
+              {meetings.length === 0 ? (
+                <option value="">No meetings scheduled yet</option>
+              ) : (
+                meetings.map((m) => (
+                  <option key={m.id} value={m.id}>
+                    {m.meetingDate} — {m.title} ({m.lifecycleStatus})
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -502,8 +506,12 @@ export const SubmissionWorkspace: React.FC<SubmissionWorkspaceProps> = ({
               Section A Baseline (Previous Approved Meeting)
             </label>
             <div className="bg-[#15151C] border border-[#30303D] rounded-lg px-3 py-2 text-xs text-[#A1A1B5] flex items-center justify-between">
-              <span className="font-semibold text-[#F5F5F7]">{previousApprovedMeeting?.meetingDate || '16th Oct 2026'}</span>
-              <span className="text-[10px] text-emerald-400 uppercase font-mono">Approved Baseline</span>
+              <span className="font-semibold text-[#F5F5F7]">
+                {previousApprovedMeeting?.meetingDate || 'No previous meetings on record'}
+              </span>
+              <span className="text-[10px] text-emerald-400 uppercase font-mono">
+                {previousApprovedMeeting ? 'Approved Baseline' : 'Initial Cycle'}
+              </span>
             </div>
           </div>
         </div>

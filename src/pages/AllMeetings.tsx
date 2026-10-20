@@ -115,8 +115,24 @@ export const AllMeetings: React.FC<AllMeetingsProps> = ({
       </div>
 
       {/* Meetings Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredMeetings.map((meeting) => (
+      {filteredMeetings.length === 0 ? (
+        <div className="bg-[#1B1B25] border border-dashed border-[#30303D] rounded-xl p-12 text-center space-y-3">
+          <Calendar className="w-10 h-10 text-[#8B5CF6] mx-auto opacity-70" />
+          <h3 className="text-base font-semibold text-[#F5F5F7]">No meetings on record</h3>
+          <p className="text-xs text-[#A1A1B5] max-w-md mx-auto">
+            No meetings have been scheduled yet. Click below to create the first upcoming meeting for AB STAR SANDS (PVT) LTD.
+          </p>
+          <button
+            onClick={onCreateMeeting}
+            className="mt-2 px-4 py-2 bg-gradient-to-r from-[#22C55E] to-[#10B981] text-gray-950 font-semibold text-xs rounded-lg inline-flex items-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/40"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create First Meeting</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredMeetings.map((meeting) => (
           <div
             key={meeting.id}
             onClick={() => onSelectMeeting(meeting.id)}
@@ -161,6 +177,7 @@ export const AllMeetings: React.FC<AllMeetingsProps> = ({
           </div>
         ))}
       </div>
+    )}
     </div>
   );
 };
